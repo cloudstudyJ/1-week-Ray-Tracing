@@ -1,0 +1,6 @@
+*.bat
+*.exe
+*.ppm
+
+build/
+.vscode/
