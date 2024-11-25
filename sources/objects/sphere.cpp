@@ -1,6 +1,7 @@
 #include "objects/sphere.hpp"
 
-Sphere::Sphere() noexcept { }
+Sphere::Sphere() noexcept
+    : mRadius{1.0f} { }
 Sphere::Sphere(const Vec3<float>& pos, const float& r) noexcept
     : mPos{pos}, mRadius{r} { }
 Sphere::~Sphere() noexcept { }

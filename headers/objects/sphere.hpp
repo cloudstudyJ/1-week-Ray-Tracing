@@ -11,7 +11,7 @@ class Sphere {
 
     public:
         Sphere() noexcept;
-        Sphere(const Vec3<float>&, const float&) noexcept;
+        Sphere(const Vec3<float>&, const float& = 1.0f) noexcept;
         ~Sphere() noexcept;
 
         void radius(const float&) noexcept;
@@ -23,7 +23,7 @@ class Sphere {
         Vec3<float> color() const noexcept;
 
     private:
-        float mRadius{ 1.0 };
+        float mRadius;
 
         Vec3<float> mPos;
         Vec3<float> mColor;

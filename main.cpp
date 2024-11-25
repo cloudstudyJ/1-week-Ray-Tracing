@@ -41,6 +41,7 @@ int main() {
         writeHeader(writer);
 
         Camera camera;
+        Sphere sphere({ 0.0f, 0.0f, -1.0f }, 0.5f);
 
         Vec3<float> viewportLTv = camera.pos() - Vec3<float>(0.0f, 0.0f, focalLength);
         viewportLTv -= (viewportXv / 2.0f);
@@ -55,10 +56,13 @@ int main() {
                 Vec3<float> rayDirection = currentPixelCenter - camera.pos();
 
                 Ray ray(camera.pos(), rayDirection);
-                Vec3<float> rayColor = Solver::lerpColor(ray);
+                Vec3<int> rayColor(255, 0, 0);
+
+                if (!Solver::isHitSphere(ray, sphere))
+                    rayColor = (Solver::lerpColor(ray) * 255);
 
                 writer << rayColor.x << ' ' << rayColor.y << ' ' << rayColor.z;
-                writer << (col == (imgW - 1)) ? '\n' : ' ';
+                writer << ((col != (imgW - 1)) ? ' ' : '\n');
             }
         }
     }
