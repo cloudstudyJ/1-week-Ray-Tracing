@@ -1,5 +1,7 @@
 #pragma once
 
+#include "math/vector/vec3.hpp"
+
 class Ray;
 class Sphere;
 
@@ -14,4 +16,6 @@ class Solver {
 
     public:
         static bool isHitSphere(const Ray&, const Sphere&) noexcept;
+
+        static Vec3<float> lerpColor(const Ray&) noexcept;
 };
