@@ -8,6 +8,7 @@ using std::ofstream;
 
 #include "utilities/camera.hpp"
 #include "objects/sphere.hpp"
+#include "math/solver.hpp"
 
 unsigned int imgW{ 512 };
 unsigned int imgH{ };
@@ -35,7 +36,7 @@ int main() {
         // Render
         /* for (int row{ }; row < imgH; ++row) {
             for (int col{ }; col < imgW; ++col) {
-                //
+
             }
         } */
     }
