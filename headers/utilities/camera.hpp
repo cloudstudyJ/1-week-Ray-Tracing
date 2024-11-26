@@ -13,9 +13,11 @@ class Camera {
         Camera();
         ~Camera() noexcept;
 
+        // Setters
         void pos(const Vec3<float>&) noexcept;
         void look(const Vec3<float>&) noexcept;
 
+        // Getters
         Vec3<float> pos() const noexcept;
         Vec3<float> look() const noexcept;
 
