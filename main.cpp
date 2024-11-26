@@ -66,7 +66,7 @@ int main() {
                 if (t >= 0.0f) {
                     Vec3<float> normal = ((ray.pos() + (ray.dir() * t)) - sphere.pos()).normalize();
 
-                    rayColor = (Vec3<float>(normal.x + 1.0f, normal.y + 1.0f, normal.z + 1.0f) * 0.5f) * 255;
+                    rayColor = ((normal + 1.0f) * 0.5f) * 255;
                 }
                 else
                     rayColor = Math::lerpf(whiteColor, skyBlueColor, (unitDir.y + 1.0f) * 0.5f) * 255;
