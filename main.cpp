@@ -1,6 +1,5 @@
 #include <iostream>
 #include <fstream>
-#include <algorithm>
 
 using std::cout;
 using std::endl;
@@ -53,20 +52,24 @@ int main() {
         Vec3<float> pixelLTv = viewportLTv + ((dPixelXv + dPixelYv) * 0.5f);
 
         // Render
+        Vec3<int> rayColor;
+        Ray ray(camera.pos(), { });
+
         for (int row{ }; row < imgH; ++row) {
             for (int col{ }; col < imgW; ++col) {
                 Vec3<float> currentPixelCenter = pixelLTv + ((dPixelXv * col) + (dPixelYv * row));
-                Vec3<float> rayDirection = currentPixelCenter - camera.pos();
+                ray.dir(currentPixelCenter - camera.pos());
 
-                Ray ray(camera.pos(), rayDirection);
-                Vec3<int> rayColor(255, 0, 0);
+                Vec3<float> unitDir = ray.dir().normalize();
+                float t = Solver::rayCastToSphere(ray, sphere);
 
-                if (!Solver::isHitSphere(ray, sphere)) {
-                    Vec3<float> unitDir = ray.dir().normalize();
-                    float t = (unitDir.y + 1.0f) * 0.5f;
+                if (t >= 0.0f) {
+                    Vec3<float> normal = ((ray.pos() + (ray.dir() * t)) - sphere.pos()).normalize();
 
-                    rayColor = (Math::lerpf(whiteColor, skyBlueColor, t) * 255);
+                    rayColor = (Vec3<float>(normal.x + 1.0f, normal.y + 1.0f, normal.z + 1.0f) * 0.5f) * 255;
                 }
+                else
+                    rayColor = Math::lerpf(whiteColor, skyBlueColor, (unitDir.y + 1.0f) * 0.5f) * 255;
 
                 writer << rayColor.x << ' ' << rayColor.y << ' ' << rayColor.z;
                 writer << ((col != (imgW - 1)) ? ' ' : '\n');

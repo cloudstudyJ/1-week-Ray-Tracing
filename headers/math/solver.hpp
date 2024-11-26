@@ -15,5 +15,5 @@ class Solver {
     Solver& operator=(Solver&&) noexcept = delete;
 
     public:
-        static bool isHitSphere(const Ray&, const Sphere&) noexcept;
+        static float rayCastToSphere(const Ray&, const Sphere&) noexcept;
 };
