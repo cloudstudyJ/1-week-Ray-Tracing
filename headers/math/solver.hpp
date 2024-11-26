@@ -16,6 +16,4 @@ class Solver {
 
     public:
         static bool isHitSphere(const Ray&, const Sphere&) noexcept;
-
-        static Vec3<float> lerpColor(const Ray&) noexcept;
 };

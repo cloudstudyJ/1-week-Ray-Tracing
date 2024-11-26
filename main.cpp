@@ -20,6 +20,9 @@ float viewportW{ };
 constexpr float aspectRatio = 16.0f / 9;
 constexpr float focalLength = 1.0f;
 
+const Vec3<float> whiteColor   = { 1.0f, 1.0f, 1.0f };
+const Vec3<float> skyBlueColor = { 0.5f, 0.75f, 1.0f };
+
 void writeHeader(ofstream& writer) {
     writer << "P3" << endl;
     writer << imgW << ' ' << imgH << endl;
@@ -58,8 +61,12 @@ int main() {
                 Ray ray(camera.pos(), rayDirection);
                 Vec3<int> rayColor(255, 0, 0);
 
-                if (!Solver::isHitSphere(ray, sphere))
-                    rayColor = (Solver::lerpColor(ray) * 255);
+                if (!Solver::isHitSphere(ray, sphere)) {
+                    Vec3<float> unitDir = ray.dir().normalize();
+                    float t = (unitDir.y + 1.0f) * 0.5f;
+
+                    rayColor = (Math::lerpf(whiteColor, skyBlueColor, t) * 255);
+                }
 
                 writer << rayColor.x << ' ' << rayColor.y << ' ' << rayColor.z;
                 writer << ((col != (imgW - 1)) ? ' ' : '\n');
