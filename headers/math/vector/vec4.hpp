@@ -61,6 +61,8 @@ class Vec<T, 4> {
         template <typename U> inline Vec<T, 4> operator*(const U&) const noexcept;
         template <typename U> inline Vec<T, 4> operator/(const U&) const;
 
+        inline Vec<T, 4> operator-() const noexcept;
+
         template <typename U> inline constexpr T dot(const Vec<U, 4>&) const noexcept;
 
         inline Vec<T, 4> normalize() const noexcept;
@@ -315,6 +317,8 @@ inline Vec<T, 4> Vec<T, 4>::operator/(const U& val) const {
         static_cast<T>(w / val)
     };
 }
+
+template <typename T> inline Vec<T, 4> Vec<T, 4>::operator-() const noexcept { return { -x, -y, -z, -w }; }
 
 template <typename T> template <typename U>
 inline constexpr T Vec<T, 4>::dot(const Vec<U, 4>& other) const noexcept {
