@@ -25,6 +25,8 @@ class Math {
         inline static constexpr T abs(const T&) noexcept;
         template <typename T, typename = enableIF<isArithmetic<T>>>
         inline static constexpr T square(const T&) noexcept;
+        template <typename T, typename U1, typename U2, typename = enableIF<isArithmetic<T> && isArithmetic<U1> && isArithmetic<U2>>>
+        inline static constexpr T clamp(const T&, const U1&, const U2&) noexcept;
 
         // Conversions
         template <typename T, typename = enableIF<isArithmetic<T>>>
@@ -67,6 +69,13 @@ inline constexpr T Math::abs(const T& val) noexcept {
 
 template <typename T, typename>
 inline constexpr T Math::square(const T& val) noexcept { return val * val; }
+template <typename T, typename U1, typename U2, typename>
+inline constexpr T Math::clamp(const T& val, const U1& min, const U2& max) noexcept {
+    if (val < static_cast<T>(min)) return min;
+    if (val > static_cast<T>(max)) return max;
+
+    return val;
+}
 
 template <typename T, typename>
 inline constexpr T Math::toRad(const T& deg) noexcept { return static_cast<T>((PI<double> / 180) * deg); }
