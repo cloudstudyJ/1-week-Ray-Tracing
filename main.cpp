@@ -9,8 +9,9 @@ using std::ofstream;
 #include "models/sphere.hpp"
 #include "utilities/camera.hpp"
 #include "utilities/ray.hpp"
+#include "utilities/random.hpp"
 
-unsigned int imgW{ 512 };
+unsigned int imgW{ 1024 };
 unsigned int imgH{ };
 
 float viewportH = 2.0f;
@@ -22,21 +23,36 @@ constexpr float focalLength = 1.0f;
 const Vec3<float> whiteColor   = { 1.0f, 1.0f, 1.0f };
 const Vec3<float> skyBlueColor = { 0.5f, 0.75f, 1.0f };
 
+constexpr unsigned short samplesPerPixel = 24;
+
+Vec3<float> makeNearSampleVector() {
+    return {
+        Random::range<float>(-0.5f, 0.5f),
+        Random::range<float>(-0.5f, 0.5f),
+        0.0f
+    };
+}
+
 void writeHeader(ofstream& writer) {
     writer << "P3" << endl;
     writer << imgW << ' ' << imgH << endl;
     writer << 255 << endl;
 }
-Vec3<int> calcColors(const World& world, const Ray& ray) {
+void writePixel(ofstream& writer, const int& col, const Vec3<float>& color) {
+    int r = static_cast<int>(255 * Math::clamp(color.r, 0.0f, 1.0f));
+    int g = static_cast<int>(255 * Math::clamp(color.g, 0.0f, 1.0f));
+    int b = static_cast<int>(255 * Math::clamp(color.b, 0.0f, 1.0f));
+
+    writer << r << ' ' << g << ' ' << b;
+    writer << ((col != (imgW - 1)) ? ' ' : '\n');
+}
+Vec3<float> calcColors(const World& world, const Ray& ray) {
     RayHitResult hitResult = world.raycast(ray);
-    Vec3<float> color;
 
     if (hitResult.isHit)
-        color = (((hitResult.normal + 1.0f) * 0.5f) * 255);
-    else
-        color = (Math::lerpf(whiteColor, skyBlueColor, (ray.dir().normalize().y + 1.0f) * 0.5f) * 255);
+        return (hitResult.normal + 1.0f) * 0.5f;
 
-    return color;
+    return Math::lerpf(whiteColor, skyBlueColor, (ray.dir().normalize().y + 1.0f) * 0.5f);
 }
 
 int main() {
@@ -55,6 +71,7 @@ int main() {
 
         World world("Main");
         world.addModel(new Sphere({ 0.0f, 0.0f, -1.0f }, 0.5f));
+        world.addModel(new Sphere({ 0.0f, -101.0f, -1.0f }, 100.0f));
 
         Camera camera;
 
@@ -67,11 +84,18 @@ int main() {
         for (int row{ }; row < imgH; ++row) {
             for (int col{ }; col < imgW; ++col) {
                 Vec3<float> curPixelCenter = (pixelLTv + ((dPixelXv * col) + (dPixelYv * row)));
-                Ray ray(camera.pos(), curPixelCenter - camera.pos());
+                Vec3<float> color;
 
-                Vec3<int> rayColor = calcColors(world, ray);
-                writer << rayColor.x << ' ' << rayColor.y << ' ' << rayColor.z;
-                writer << ((col != (imgW - 1)) ? ' ' : '\n');
+                for (int sample{ }; sample < samplesPerPixel; ++sample) {
+                    Vec3<float> offset = makeNearSampleVector();
+                    Vec3<float> samplePixel = pixelLTv + (dPixelXv * (col + offset.x)) + (dPixelYv * (row + offset.y));
+
+                    Ray ray(camera.pos(), samplePixel - camera.pos());
+                    color += calcColors(world, ray);
+                }
+                color /= samplesPerPixel;
+
+                writePixel(writer, col, color);
             }
         }
     }
