@@ -14,17 +14,27 @@ RayHitResult SphereCollider::intersect(const Ray& ray) {
     float a = ray.dir().lengthSquare();
     float h = ray.dir().dot(diffCA);
     float c = (diffCA.lengthSquare() - Math::square(sphere->radius()));
-
     float discriminant = (Math::square(h) - (a * c));
-    float t = (h - std::sqrt(discriminant) / a);
 
     RayHitResult hitResult;
 
-    if (t >= 0.0f) {
-        hitResult.isHit = true;
-        hitResult.contactPoint = (ray.pos() + (ray.dir() * t));
-        hitResult.distance = hitResult.contactPoint.length();
-        hitResult.normal = ((hitResult.contactPoint - sphere->pos()) / sphere->radius());
+    if (discriminant >= 0.0f) {
+        float sqrtDiscriminant = std::sqrt(discriminant);
+
+        float t1 = (h - sqrtDiscriminant) / a;
+        float t2 = (h + sqrtDiscriminant) / a;
+        float t = (t1 >= 0.0f) ? t1 : ((t2 >= 0.0f) ? t2 : -1.0f);
+
+        if (t >= 0.001f) {
+            hitResult.isHit = true;
+            hitResult.contactPoint = (ray.pos() + (ray.dir() * t));
+            hitResult.distance = hitResult.contactPoint.length();
+            hitResult.normal = ((hitResult.contactPoint - sphere->pos()) / sphere->radius());
+
+            // is ray from inside of sphere
+            if (ray.dir().dot(hitResult.normal) >= 0.0f)
+                hitResult.normal = -hitResult.normal;
+        }
     }
 
     return hitResult;
