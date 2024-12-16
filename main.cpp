@@ -1,8 +1,7 @@
 #include <iostream>
 #include <fstream>
 
-using std::cout;
-using std::endl;
+using std::cout, std::endl;
 using std::ofstream;
 
 #include "world.hpp"
@@ -11,7 +10,7 @@ using std::ofstream;
 #include "utilities/ray.hpp"
 #include "utilities/random.hpp"
 
-unsigned int imgW{ 1024 };
+unsigned int imgW{ 512 };
 unsigned int imgH{ };
 
 float viewportH = 2.0f;
@@ -32,25 +31,47 @@ Vec3<float> makeNearSampleVector() {
         0.0f
     };
 }
+Vec3<float> makeRandomUnitVector() {
+    while (true) {
+        Vec3<float> v = Random::Vec3<float>(-1.0f, 1.0f);
+        float lenSQ = v.lengthSquare();
+
+        if (1.0E-06f <= lenSQ && lenSQ <= 1.0f)
+            return v.normalize();
+    }
+}
+Vec3<float> makeRandomHemiSphereVector(const Vec3<float>& normal) {
+    Vec3<float> v = makeRandomUnitVector();
+
+    if (v.dot(normal) < 0.0f)
+        return -v;
+
+    return v;
+}
 
 void writeHeader(ofstream& writer) {
     writer << "P3" << endl;
     writer << imgW << ' ' << imgH << endl;
     writer << 255 << endl;
 }
-void writePixel(ofstream& writer, const int& col, const Vec3<float>& color) {
+void writePixel(ofstream& writer, const Vec3<float>& color) {
     int r = static_cast<int>(255 * Math::clamp(color.r, 0.0f, 1.0f));
     int g = static_cast<int>(255 * Math::clamp(color.g, 0.0f, 1.0f));
     int b = static_cast<int>(255 * Math::clamp(color.b, 0.0f, 1.0f));
 
     writer << r << ' ' << g << ' ' << b;
-    writer << ((col != (imgW - 1)) ? ' ' : '\n');
 }
-Vec3<float> calcColors(const World& world, const Ray& ray) {
+Vec3<float> calcColor(const World& world, const Ray& ray, const unsigned short& depth) {
+    if (depth <= 0)
+        return { };
+
     RayHitResult hitResult = world.raycast(ray);
 
-    if (hitResult.isHit)
-        return (hitResult.normal + 1.0f) * 0.5f;
+    if (hitResult.isHit) {
+        Vec3<float> reflectionDir = makeRandomHemiSphereVector(hitResult.normal);
+
+        return calcColor(world, { hitResult.contactPoint, reflectionDir }, depth - 1) * 0.5f;
+    }
 
     return Math::lerpf(whiteColor, skyBlueColor, (ray.dir().normalize().y + 1.0f) * 0.5f);
 }
@@ -71,7 +92,7 @@ int main() {
 
         World world("Main");
         world.addModel(new Sphere({ 0.0f, 0.0f, -1.0f }, 0.5f));
-        world.addModel(new Sphere({ 0.0f, -101.0f, -1.0f }, 100.0f));
+        world.addModel(new Sphere({ 0.0f, -100.5f, -1.0f }, 100.0f));
 
         Camera camera;
 
@@ -91,11 +112,12 @@ int main() {
                     Vec3<float> samplePixel = pixelLTv + (dPixelXv * (col + offset.x)) + (dPixelYv * (row + offset.y));
 
                     Ray ray(camera.pos(), samplePixel - camera.pos());
-                    color += calcColors(world, ray);
+                    color += calcColor(world, ray, 24);
                 }
                 color /= samplesPerPixel;
 
-                writePixel(writer, col, color);
+                writePixel(writer, color);
+                writer << ((col != (imgW - 1)) ? ' ' : '\n');
             }
         }
     }

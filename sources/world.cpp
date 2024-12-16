@@ -20,7 +20,7 @@ void World::clear() {
 // Utilities
 RayHitResult World::raycast(const Ray& ray) const {
     RayHitResult closestHit;
-    closestHit.distance = static_cast<float>(3.4e+38);
+    closestHit.distance = static_cast<float>(3.4E+38);
 
     for (const auto& model: mModels) {
         SphereCollider* collider = model->getComponent<SphereCollider>();
